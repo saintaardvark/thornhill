@@ -1,0 +1,164 @@
+#!/usr/bin/perl -w
+
+# Hugh Brown
+# Jan 19, 2012
+# Web:	 http://saintaardvarkthecarpeted.com/software/thornhill
+# Email: aardvark [ta] saintaardvarkthecarpeted [tod] com
+#
+# thornhill: A Small but Useful(tm) utility to test Alias (and, in the
+# future, other) directives found in an Apache config file.  Meant to
+# be useful for ensuring that content on one server is the same as on
+# another (ie, when migrating servers).
+#
+# ASSUMPTIONS:
+#
+# - you have an old site where everything is # working, and a new site
+#   you wish to eventually make live
+# - DNS has not yet been changed
+# - the ServerAlias is the same on both machines
+# - Alias and other Apache directives are sufficiently important to be
+#   worth testing on their own
+#
+# BUGS:
+# - Assumes ServerAlias; you'll need to adjust that below
+#
+# TODO:
+# - better tests
+# - better documentation (POD?)
+# - Check for ServerName as well as ServerAlias
+# - Save tests to file for running later
+# - Allow tests to be specified (eg: find "this sentence" in both
+#   pages, rather than worry about whether they're both identical;
+#   should catch things like different dates, session ids, etc)
+#
+# NAMED AFTER:
+# - Lisa Thornhill (http://www.imdb.com/title/tt0221728/)
+#
+# VERSION:
+# - 0.1 (Works for me!)
+#
+# Copyright (C) 2011 Hugh Brown
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330,
+# Boston, MA 02111-1307, USA.
+#
+# $Id: test_httpd_conf.pl 2882 2012-01-19 22:08:52Z hugh $
+# $URL: svn+ssh://noc/var/svn/hugh/scripts/test_httpd_conf.pl $
+
+use strict;
+use Getopt::Std;
+use Test::More;
+use Apache::Admin::Config;
+use WWW::Mechanize;
+my %option;
+my ($site, $altsite);
+my $verbose = 0;
+my $testing_only = 0;
+
+sub usage {
+	print <<USAGE;
+
+$0: A Small but Useful(tm) utility to test Alias (and, in the future,
+other) directives found in an Apache config file.  Meant to be useful
+for ensuring that content on one server is the same as on another (ie,
+when migrating servers).  See the comments in this file for details.
+
+Usage:
+
+-s [site]	The name of the site you want to check.
+-a [site]	Alternate site (ie, the place you're moving it to)
+-f [file]	Path to the httpd config file.
+-v		Be verbose.
+-n		Testing only: show, do not do. Implies -v.
+-h		This helpful message.
+USAGE
+	exit 1;
+}
+
+sub complain_and_die {
+	my $error = shift;
+	print STDERR "$error\n\n";
+	&usage;
+}
+
+sub debug {
+	if ($verbose > 0) {
+		my $log = shift;
+		print "$log\n";
+	}
+}
+
+getopts('vnhs:a:f:', \%option);
+
+if ($option{h}) {
+	&usage;
+}
+&usage unless
+  (defined $option{a} and
+   defined $option{s} and
+   defined $option{f});
+
+if ($option{v}) {
+	$verbose = 1;
+}
+
+if ($option{n}) {
+	$testing_only = 1;
+	$verbose = 1;
+}
+
+if (defined $option{s}) {
+	$site = $option{s};
+}
+if (defined $option{a}) {
+	$altsite = $option{a};
+}
+
+my $oldsite = WWW::Mechanize->new;
+my $newsite = WWW::Mechanize->new;
+$newsite->add_header('Host' => $site);
+
+# load a conf file
+my $conf = new Apache::Admin::Config $option{f}
+        or die $Apache::Admin::Config::ERROR;
+
+my $vhost;
+foreach my $vh ($conf->section('VirtualHost')) {
+      if($vh->directive('ServerAlias')->value eq $site) {
+	      $vhost = $vh;
+	      last;
+      }
+}
+
+foreach my $i ($vhost->directive("Alias")) {
+	my $url = ($i->value =~ /^(\S+)\s+(\S+)/)[0];
+	next if ($url =~ /(tmp|bgp)/); # FIXME: Stupid hack
+	$url = "http://${site}${url}";
+	ok ($oldsite->get($url), "Can get $url at old");
+	ok ($newsite->get($url), "Can get $url at new");
+	is ($oldsite->content,
+	    $newsite->content,
+	    "$url same on both old and new");
+}
+
+foreach my $i ($vhost->directive("Redirect")) {
+	my $j = ($i->value =~ /^(\S+)\s+(\S+)/)[0];
+	print "FIXME: Not yet testing Redirect ${site}${j}\n";
+}
+foreach my $i ($vhost->directive("RedirectMatch")) {
+	my $j = ($i->value =~ /^(\S+)\s+(\S+)/)[0];
+	print "FIXME: Not yet testing RedirectMatch ${site}$j\n";
+}
+exit;
