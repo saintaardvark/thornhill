@@ -31,10 +31,6 @@ Perl modules:
 - Apache::Admin::Config
 - WWW::Mechanize
 
-Assumptions
------------
-
-
 Bugs
 ----
 
@@ -45,7 +41,6 @@ TODO
 
 - better tests
 - better documentation (POD?)
-- Check for ServerName as well as ServerAlias
 - Save tests to file for running later
 - Allow tests to be specified (eg: find "this sentence" in both
   pages, rather than worry about whether they're both identical;

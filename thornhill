@@ -37,6 +37,7 @@ my %option;
 my ($site, $altsite);
 my $verbose = 0;
 my $testing_only = 0;
+my $matchme = "ServerName";
 my ($vhost, $vh);
 my ($i, $j, $url);
 my $conf;
@@ -54,6 +55,8 @@ Usage:
 -s [site]	The name of the site you want to check.
 -a [site]	Alternate site (ie, the place you're moving it to)
 -f [file]	Path to the httpd config file.
+-m [directive]  Use this directive to match VirtualHost config.
+		Default: ServerName; possible alternative: ServerAlias.
 -v		Be verbose.
 -n		Testing only: show, do not do. Implies -v.
 -h		This helpful message.
@@ -74,7 +77,7 @@ sub debug {
 	}
 }
 
-getopts('vnhs:a:f:', \%option);
+getopts('vnhs:a:f:m:', \%option);
 
 if ($option{h}) {
 	&usage;
@@ -99,6 +102,9 @@ if (defined $option{s}) {
 if (defined $option{a}) {
 	$altsite = $option{a};
 }
+if (defined $option{m}) {
+	$matchme = $option{m};
+}
 
 my $oldsite = WWW::Mechanize->new;
 my $newsite = WWW::Mechanize->new;
@@ -109,7 +115,7 @@ $conf = new Apache::Admin::Config $option{f} or
   die $Apache::Admin::Config::ERROR;
 
 foreach $vh ($conf->section('VirtualHost')) {
-      if($vh->directive('ServerAlias')->value eq $site) {
+      if($vh->directive($matchme)->value eq $site) {
 	      $vhost = $vh;
 	      last;
       }
