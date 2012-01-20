@@ -1,43 +1,11 @@
 #!/usr/bin/perl -w
 
-# Hugh Brown
-# Jan 19, 2012
-# Web:	 http://saintaardvarkthecarpeted.com/software/thornhill
-# Email: aardvark [ta] saintaardvarkthecarpeted [tod] com
-#
 # thornhill: A Small but Useful(tm) utility to test Alias (and, in the
 # future, other) directives found in an Apache config file.  Meant to
 # be useful for ensuring that content on one server is the same as on
-# another (ie, when migrating servers).
+# another (ie, when migrating servers).  Version 0.1 (works for me!).
 #
-# ASSUMPTIONS:
-#
-# - you have an old site where everything is # working, and a new site
-#   you wish to eventually make live
-# - DNS has not yet been changed
-# - the ServerAlias is the same on both machines
-# - Alias and other Apache directives are sufficiently important to be
-#   worth testing on their own
-#
-# BUGS:
-# - Assumes ServerAlias; you'll need to adjust that below
-#
-# TODO:
-# - better tests
-# - better documentation (POD?)
-# - Check for ServerName as well as ServerAlias
-# - Save tests to file for running later
-# - Allow tests to be specified (eg: find "this sentence" in both
-#   pages, rather than worry about whether they're both identical;
-#   should catch things like different dates, session ids, etc)
-#
-# NAMED AFTER:
-# - Lisa Thornhill (http://www.imdb.com/title/tt0221728/)
-#
-# VERSION:
-# - 0.1 (Works for me!)
-#
-# Copyright (C) 2011 Hugh Brown
+# See the README for details.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -54,8 +22,11 @@
 # Foundation, Inc., 59 Temple Place - Suite 330,
 # Boston, MA 02111-1307, USA.
 #
-# $Id: test_httpd_conf.pl 2882 2012-01-19 22:08:52Z hugh $
-# $URL: svn+ssh://noc/var/svn/hugh/scripts/test_httpd_conf.pl $
+# Hugh Brown
+# Jan 19, 2012
+# Copyright (C) 2012 Hugh Brown
+# Web:	 http://saintaardvarkthecarpeted.com/software/thornhill
+# Email: aardvark [ta] saintaardvarkthecarpeted [tod] com
 
 use strict;
 use Getopt::Std;
