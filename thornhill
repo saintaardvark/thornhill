@@ -140,4 +140,5 @@ foreach my $i ($vhost->directive("RedirectMatch")) {
 	$j = ($i->value =~ /^(\S+)\s+(\S+)/)[0];
 	print "FIXME: Not yet testing RedirectMatch ${site}$j\n";
 }
+done_testing();
 exit;
