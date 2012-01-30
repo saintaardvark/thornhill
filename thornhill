@@ -3,7 +3,7 @@
 # thornhill: A Small but Useful(tm) utility to test Alias (and, in the
 # future, other) directives found in an Apache config file.  Meant to
 # be useful for ensuring that content on one server is the same as on
-# another (ie, when migrating servers).  Version 0.1 (works for me!).
+# another (ie, when migrating servers).  Version 0.3.
 #
 # See the README for details.
 #
