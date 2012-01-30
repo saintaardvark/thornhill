@@ -32,7 +32,7 @@ use strict;
 use Getopt::Std;
 use Test::More;
 use Apache::Admin::Config;
-use WWW::Mechanize;
+use Test::WWW::Mechanize;
 my %option;
 my ($site, $altsite);
 my $verbose = 0;
@@ -106,8 +106,8 @@ if (defined $option{m}) {
 	$matchme = $option{m};
 }
 
-my $oldsite = WWW::Mechanize->new;
-my $newsite = WWW::Mechanize->new;
+my $oldsite = Test::WWW::Mechanize->new;
+my $newsite = Test::WWW::Mechanize->new;
 $newsite->add_header('Host' => $site);
 
 # load a conf file
@@ -125,8 +125,8 @@ foreach $i ($vhost->directive("Alias")) {
 	$url = ($i->value =~ /^(\S+)\s+(\S+)/)[0];
 	next if ($url =~ /(tmp|bgp)/); # FIXME: Stupid hack
 	$url = "http://${site}${url}";
-	ok ($oldsite->get($url), "Can get $url at old");
-	ok ($newsite->get($url), "Can get $url at new");
+	$oldsite->get_ok($url), "Can get $url at old");
+	$newsite->get_ok($url), "Can get $url at new");
 	is ($oldsite->content,
 	    $newsite->content,
 	    "$url same on both old and new");
