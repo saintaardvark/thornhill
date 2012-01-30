@@ -123,10 +123,19 @@ foreach $vh ($conf->section('VirtualHost')) {
 
 foreach $i ($vhost->directive("Alias")) {
 	$url = ($i->value =~ /^(\S+)\s+(\S+)/)[0];
-	next if ($url =~ /(tmp|bgp)/); # FIXME: Stupid hack
 	$url = "http://${site}${url}";
 	$oldsite->get_ok($url), "Can get $url at old");
 	$newsite->get_ok($url), "Can get $url at new");
+	is ($oldsite->content,
+	    $newsite->content,
+	    "$url same on both old and new");
+}
+
+foreach $i ($vhost->directive("ProxyPassReverse")) {
+	$url = ($i->value =~ /^(\S+)\s+(\S+)/)[0];
+	$url = "http://${site}${url}";
+	$oldsite->get_ok($url);
+	$newsite->get_ok($url);
 	is ($oldsite->content,
 	    $newsite->content,
 	    "$url same on both old and new");
